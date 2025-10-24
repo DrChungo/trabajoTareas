@@ -1,9 +1,19 @@
 <?php
 //CONFIG
-$json = file_get_contents('C:\Users\Emiliano\Desktop\vsCode\DWES\TrabajoTareas\tareas.json');
 
-$data = json_decode($json, true);
+$FILE = "C:\Users\Emiliano\Desktop\vsCode\DWES\TrabajoTareas\tareas.json";
 
+
+function loadData($file)
+{
+    if (file_exists($file)) {
+
+        $json = file_get_contents($file);
+        $data = json_decode($json, true);
+
+        return $data;
+    }
+}
 
 
 function menu()
@@ -20,12 +30,16 @@ function menu()
 }
 
 
+//Guarda en JSON ,lo deja con un formato legible y elimina los simbolos especiales
+function saveData($file, $data)
+{
+    file_put_contents($file, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+}
 
-
-function addTask(&$json, $title, $description, $due_date, $completed = false)
+function addTask($file, $title, $description, $due_date, $completed = false)
 {
 
-    $tasks = $json["tasks"];
+    $tasks = $file["tasks"];
     $newId = end($tasks)["id"] + 1;
 
     $newTask = [
@@ -138,23 +152,21 @@ function editTask(&$json, $idToEdit)
 }
 
 
-if (deleteTask($data, 2)) {
-    echo "Tarea eliminada correctamente.\n";
-} else {
-    echo "No se encontró una tarea con ese ID.\n";
-}
-
-if (completeTask($data, 3)) {
-    echo "Tarea marcada como completada.\n";
-} else {
-    echo "No se encontró una tarea con ese ID.\n";
-}
 
 
-$taskData = writeTask();
-function saveData($file, $data)
+
+
+
+
+function findTaskById($json, $id)
 {
-    file_put_contents($file, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+
+
+    foreach ($json["tasks"] as $i => $task) {
+
+        if ((int)$task["id"] === (int)$id) return $i;
+    }
+    return -1;
 }
 
 
@@ -173,23 +185,59 @@ do {
             showTasks($data);
             break;
         case '2':
-            showTasks($data);
+            echo "añadir nueva tarea: \n";
+            $t = writeTask();
+            $new = addTask($data, $t["title"], $t["description"], $t["due_date"]);
+            saveData($FILE, $data);
+            echo "Tarea creada";
+
             break;
         case '3':
-            showTasks($data);
-            break;
-        case '4':
-            showTasks($data);
-            break;
-        case '1':
-            showTasks($data);
+            $id = (int)readline(("ID de la tarea a editar: "));
+            if (!editTask($data, $id)) {
+                echo "No se encontro la tarea con ese ID.\n";
+            } else {
+
+                saveData($FILE, $data);
+                echo "Tarea guardada";
+            }
+
             break;
 
+
+        case '4':
+            $id = (int)readline("Introduce el ID de la tarea");
+
+            if (completeTask($json, $id)) {
+                saveData($FILE, $data);
+                echo "Tarea guardada correctamente";
+            } else {
+                echo "No se encontro la tarea";
+            }
+            break;
+
+        case '5':
+            $id = (int)readline("Introduce el id de la tarea a eliminar: ");
+            if (findTaskById($data, $id) === -1) {
+
+                echo "la tarea no existe";
+            
+                break;
+            }
+            if (deleteTask($data,$id)) {
+                saveData($FILE,$data);
+
+                echo "tarea eliminada";
+            }
+
+            break;
+        case '6':
+            showTasks($data);
+            break;
         default:
-            # code...
+
             break;
     }
 } while ($op !== 0);
 
 //addTask($data, "Hacer ejercicio", "Correr 30 minutos", "2025-10-20", false);
-file_put_contents('C:\Users\Emiliano\Desktop\vsCode\DWES\TrabajoTareas\tareas.json', json_encode($data, JSON_PRETTY_PRINT));
