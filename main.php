@@ -13,7 +13,7 @@ $FILE = __DIR__ . "/tareas.json";
 do {
     $data = loadData($FILE);
     menu();
-    $op = trim(readline("Elije una opción: "));
+    $op = trim(readline("Elije una opción (0-5): "));
 
     switch ($op) {
         case '1':
@@ -46,3 +46,5 @@ do {
             break;
     }
 } while ($op !== '0');
+
+
