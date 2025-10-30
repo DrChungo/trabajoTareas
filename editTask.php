@@ -1,6 +1,7 @@
 <?php
 
 
+//Funcion que edita el titutlo, la descripcion y la fecha de la tarea
 function editTask(&$data)
 {
     $id = (int)readline("ID de la tarea a editar: ");
